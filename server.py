@@ -6,6 +6,8 @@ import Crypto.Cipher.AES as AES
 import Crypto.Cipher.PKCS1_OAEP as PKCS1_OAEP
 import hashlib
 import os
+import base64
+import json
 
 clientConnected_Socket = []
 clientConnected_Address = []
@@ -60,7 +62,7 @@ def clientthread(clientSock,clientAddress):
         en_object = hashlib.sha1(encrypto)
         en_digest = en_object.hexdigest()
         print("SESSION KEY : ",en_digest)
-        #mã hóa public key và session key
+        #dùng public key để mã hóa session key 
         E = PKCS1_OAEP.new(server_public_key).encrypt(encrypto)
         # print("Encrypted public key and session key "+ str(E))
         print("HANDSHAKE complete")
@@ -76,11 +78,23 @@ def clientthread(clientSock,clientAddress):
         clientSock.send(welcomeMsg.encode("UTF-8"))
         while True:      
             #message from client
-            newmess = clientSock.recv(1024)
-            print("New mess from client", newmess)
+            recveMsg(en_digest,clientSock)
         clientSock.close()
     else:
         print("Public key not match")
+
+def recveMsg(key,socket):
+    eMsg = socket.recv(1024).decode()
+    b64 = json.loads(eMsg)
+    nonce = base64.b64decode(b64['nonce'])
+    ct = base64.b64decode(b64['ciphertext'])
+    # print(eMsg)
+    key = key[:16].encode()
+    # print(key)
+    aesDecrypt = AES.new(key,AES.MODE_CTR,nonce=nonce)
+    # print(aesDecrypt)
+    dMsg = aesDecrypt.decrypt(ct).decode()
+    print("New mess from client ",socket ," : " , dMsg)
 
 
 if __name__ == "__main__":
