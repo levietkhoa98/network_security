@@ -4,10 +4,15 @@ How to use:
 2. Install pycryptodome : pip install pycryptodome
 3. Install mysql
 4. Vào mysql : tạo csdl anm, tạo người quản lý riêng cho csdl này (tên đăng nhập và mật khẩu tùy chọn)
+
 sửa đoạn code này để kết nối sql:
-  mydb = mysql.connector.connect(host='localhost',database='anm',user='',password='',port='')
-user : tên đăng nhập
-password : mật khẩu
-port : cổng của mysql (mặc định 3306)
+
+mydb = mysql.connector.connect(host='localhost',database='anm',user='',password='',port='')
+
+-user : tên đăng nhập
+
+-password : mật khẩu
+
+-port : cổng của mysql (mặc định 3306)
 5. Launch server (nếu thiếu thư viện thì tự cài thêm)
 6. Launch client
