@@ -156,7 +156,30 @@ def sendeMSg(recvKey,recvSocket,keyArr):
         # đăng ký
         if (MsgArr[0] == "signup"):
             # mã hóa trước khi cho vào cơ sở dữ liệu(Khoa code)
-            
+            import six, base64
+            def encode(key, string):
+                encoded_chars = []
+                for i in range(len(string)):
+                    key_c = key[i % len(key)]
+                    encoded_c = chr(ord(string[i]) + ord(key_c) % 256)
+                    encoded_chars.append(encoded_c)
+                    encoded_string = ''.join(encoded_chars)
+                    encoded_string = encoded_string.encode('latin') if six.PY3 else encoded_string
+                return base64.urlsafe_b64encode(encoded_string).rstrip(b'=')
+            def decode(key, string):
+                string = base64.urlsafe_b64decode(string + b'===')
+                string = string.decode('latin') if six.PY3 else string
+                encoded_chars = []
+                for i in range(len(string)):
+                    key_c = key[i % len(key)]
+                    encoded_c = chr((ord(string[i]) - ord(key_c) + 256) % 256)
+                    encoded_chars.append(encoded_c)
+                    encoded_string = ''.join(encoded_chars)
+                return encoded_string
+                e = encode('a key', 'a message')
+                d = decode('a key', e)
+                print([e])
+                print([d])
             sql = "INSERT INTO customers (name, password) VALUES (%s, %s)"
             #MsgArr[2] là mật khẩu chưa mã hóa thay bằng mật khẩu mã hóa
             val = (MsgArr[1], MsgArr[2])
@@ -176,6 +199,22 @@ def sendeMSg(recvKey,recvSocket,keyArr):
         # đăng nhập
         elif (MsgArr[0] == "login"):
             #Mã hóa mật khẩu mới nhận được để rồi so sánh mật khẩu đang mã hóa trong csdl (Khoa code):
+            import base64
+            def encode(key, clear):
+                enc = []
+                for i in range(len(clear)):
+                    key_c = key[i % len(key)]
+                    enc_c = chr((ord(clear[i]) + ord(key_c)) % 256)
+                    enc.append(enc_c)
+                    return base64.urlsafe_b64encode("".join(enc).encode()).decode()
+            def decode(key, enc):
+                dec = []
+                enc = base64.urlsafe_b64decode(enc).decode()
+                for i in range(len(enc)):
+                    key_c = key[i % len(key)]
+                    dec_c = chr((256 + ord(enc[i]) - ord(key_c)) % 256)
+                    dec.append(dec_c)
+                    return "".join(dec)
             # MsgArr[2] là mật khẩu chưa mã hóa. Mã hóa xong rồi nhớ thay 
 
             sql = "SELECT * FROM customers WHERE name = %s AND password = %s"
